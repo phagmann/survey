@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+  <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+  <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+<h1 id="score"> Survey </h1>
+<% tracker = 1 %>
+<% Question.first.displays.each do |q_data| %>
+
+    <h2> <%= q_data[0] %> </h2>
+
+    <input id= <%= "#{tracker}" %> type="checkbox" style="float: left; margin-top: 5px;>" onclick="button_select_master(this)">
+    <p id= <%= "q#{tracker}" %> style="margin-left: 25px;"> <%= q_data[1] %> </p>
+    <% tracker += 1 %>
+
+    <input id= <%= "#{tracker}" %> type="checkbox" style="float: left; margin-top: 5px;>" onclick="button_select_master(this)">
+    <p id= <%= "q#{tracker}" %> style="margin-left: 25px;"> <%= q_data[2] %> </p>
+    <% tracker += 1 %>
+    
+    <input id= <%= "#{tracker}" %> type="checkbox" style="float: left; margin-top: 5px;>" onclick="button_select_master(this)">
+    <p id= <%= "q#{tracker}" %> style="margin-left: 25px;"> <%= q_data[3] %> </p>
+    <% tracker += 1 %>
+    
+    <input id= <%= "#{tracker}" %> type="checkbox" style="float: left; margin-top: 5px;>" onclick="button_select_master(this)">
+    <p id= <%= "q#{tracker}" %> style="margin-left: 25px;"> <%= q_data[4] %> </p>
+    <% tracker += 1 %>
+    
+<% end %>
+<button id="popup" onclick="signIn(this)">Submit</button>
+
+<script>
+
+function signIn(submit) {
+    var correct = highlight_results();
+    console.log(correct)
+    var txt;
+    var person = prompt("Please enter your name:", "");
+    if (person == null || person == "") {
+        txt = "User cancelled the prompt.";
+        location.reload();
+    } else {
+        txt = "Hello " + person + "! You scored a " + correct.toString() + "/2";
+    }
+    document.getElementById("score").innerHTML = txt;
+    submit.disabled = true;
+}
+    
+function button_select_master(input){
+    var id = input.id - 1
+    for (var i = (parseInt(id  / 4) * 4) ; i < (parseInt(id / 4) * 4) + 4; i++){
+        if ( input.checked && i+1 != id+1 ){
+            // console.log(i+1);
+            curr_input = document.getElementById(i+1);
+            curr_input.disabled = true;
+        }
+        else{
+            curr_input = document.getElementById(i+1);
+            curr_input.disabled = false;
+        };
+    };
+}
+
+function highlight_results(){
+var total;
+var count_wrong = 0;
+$( function() {
+jQuery.ajax({
+    type: "GET",
+    url: "/questions/1",
+    success: function(question_answers) {
+
+    total = question_answers.length
+    // console.log(question_answers)
+    for(var box_index = 1; box_index <= 4*question_answers.length; box_index++){
+        curr_input = document.getElementById(box_index);
+        
+         if (question_answers[ parseInt((box_index - 1) / 4)][ ((box_index - 1) % 4) + 1] == question_answers[ parseInt((box_index - 1) / 4)][0] ) {
+            highlight_curr = document.getElementById("q" + box_index.toString());
+            highlight_curr.innerHTML = "<mark class='green'>" +  highlight_curr.innerHTML + "</mark>"
+            
+            if( !curr_input.checked ){ 
+                count_wrong ++
+            }
+
+        }
+
+        if( curr_input.checked ){ 
+            highlight_curr = document.getElementById("q" + box_index.toString());
+            highlight_curr.innerHTML = "<mark class='red'>" +  highlight_curr.innerHTML + "</mark>"
+        }
+
+       
+            
+        
+            
+    }
+    console.log("POOM");
+    console.log(total - count_wrong);
+
+  },
+  async: false
+})
+
+})
+return total - count_wrong
+}
+
+</script>
+
+</head>
+</html>
